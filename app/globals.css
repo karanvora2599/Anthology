@@ -39,10 +39,3 @@ input:-webkit-autofill {
   -webkit-text-fill-color: #1C1A17;
 }
 
-/* Quote input placeholder */
-.quote-input:empty::before {
-  content: attr(data-placeholder);
-  color: #7A6B5A;
-  opacity: 0.45;
-  pointer-events: none;
-}

@@ -142,8 +142,6 @@ export default function PoemGenerator() {
             suppressContentEditableWarning
             onInput={handleInput}
             onKeyDown={handleKeyDown}
-            data-placeholder="............"
-            className="quote-input"
             style={{
               fontFamily: "var(--font-cormorant)",
               fontSize: "3.2rem",
@@ -152,9 +150,10 @@ export default function PoemGenerator() {
               lineHeight: 1,
               outline: "none",
               borderBottom: "1.5px dotted #1C1A17",
-              minWidth: "7rem",
+              minWidth: "2px",
               display: "inline-block",
               cursor: isGenerating ? "default" : "text",
+              whiteSpace: "pre",
             }}
           />
 
