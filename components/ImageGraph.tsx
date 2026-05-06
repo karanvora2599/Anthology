@@ -40,6 +40,94 @@ function nodeTilt(id: number) {
   return (((id * 137 + 17) % 13) - 6) * 1.2;
 }
 
+// ── Polaroid styles ───────────────────────────────────────────────────────────
+// SVG feTurbulence grain tile, baked as a data URL for hasGrain styles
+const GRAIN_URL = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.88' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.14'/%3E%3C/svg%3E")`;
+
+type PolaroidStyle = {
+  paper: string;
+  padding: string;
+  imgHeight: number;
+  imgFilter: string;
+  shadow: string;
+  hasGrain: boolean;
+  captionColor: string;
+  dateColor: string;
+  borderRadius: string;
+  width: number;
+};
+
+function getPolaroidStyle(id: number): PolaroidStyle {
+  switch ((id * 7 + 3) % 8) {
+    case 0: // Clean, fresh
+      return {
+        paper: "#FDFAF4", padding: "8px 8px 34px 8px", imgHeight: 96,
+        imgFilter: "none",
+        shadow: "0 4px 20px rgba(28,26,23,0.15), 0 1px 4px rgba(28,26,23,0.07)",
+        hasGrain: false, captionColor: "#5C4A38", dateColor: "#7A6B5A",
+        borderRadius: "2px", width: 130,
+      };
+    case 1: // Faded, aged, yellowed paper
+      return {
+        paper: "#EDE0B4", padding: "10px 10px 40px 10px", imgHeight: 90,
+        imgFilter: "saturate(0.45) brightness(1.08) contrast(0.88)",
+        shadow: "0 6px 24px rgba(28,26,23,0.09), 0 2px 6px rgba(28,26,23,0.04)",
+        hasGrain: true, captionColor: "#7A6044", dateColor: "#9A8060",
+        borderRadius: "1px", width: 132,
+      };
+    case 2: // Over-exposed, washed out
+      return {
+        paper: "#FFFFFF", padding: "6px 6px 30px 6px", imgHeight: 100,
+        imgFilter: "brightness(1.38) saturate(0.65) contrast(0.88)",
+        shadow: "0 2px 12px rgba(28,26,23,0.07), 0 1px 3px rgba(28,26,23,0.04)",
+        hasGrain: false, captionColor: "#8A7A68", dateColor: "#A09080",
+        borderRadius: "2px", width: 128,
+      };
+    case 3: // Grainy, punchy contrast
+      return {
+        paper: "#F0EBE2", padding: "8px 8px 36px 8px", imgHeight: 94,
+        imgFilter: "contrast(1.28) brightness(0.91) saturate(1.18)",
+        shadow: "0 8px 28px rgba(28,26,23,0.22), 0 2px 6px rgba(28,26,23,0.10)",
+        hasGrain: true, captionColor: "#3C2E1E", dateColor: "#5C4A38",
+        borderRadius: "2px", width: 130,
+      };
+    case 4: // Black & white
+      return {
+        paper: "#F8F6F2", padding: "8px 8px 36px 8px", imgHeight: 96,
+        imgFilter: "grayscale(1) contrast(1.12) brightness(0.96)",
+        shadow: "0 4px 18px rgba(28,26,23,0.18), 0 1px 4px rgba(28,26,23,0.08)",
+        hasGrain: false, captionColor: "#4A4240", dateColor: "#6A6260",
+        borderRadius: "2px", width: 130,
+      };
+    case 5: // Sepia, warm vintage — wide frame
+      return {
+        paper: "#F0E2C0", padding: "12px 10px 46px 10px", imgHeight: 88,
+        imgFilter: "sepia(0.72) contrast(0.92) brightness(1.04)",
+        shadow: "0 6px 22px rgba(90,60,20,0.18), 0 2px 6px rgba(90,60,20,0.08)",
+        hasGrain: true, captionColor: "#6A4A28", dateColor: "#8A6A48",
+        borderRadius: "1px", width: 138,
+      };
+    case 6: // Cool, muted, slightly blue
+      return {
+        paper: "#ECEEF5", padding: "7px 9px 32px 7px", imgHeight: 98,
+        imgFilter: "saturate(0.55) brightness(1.1) contrast(0.93) hue-rotate(-12deg)",
+        shadow: "0 4px 16px rgba(20,40,80,0.12), 0 1px 4px rgba(20,40,80,0.06)",
+        hasGrain: false, captionColor: "#4A5878", dateColor: "#6A7898",
+        borderRadius: "3px", width: 128,
+      };
+    case 7: // Dark, moody, dramatic
+      return {
+        paper: "#E4DDD0", padding: "8px 8px 36px 8px", imgHeight: 96,
+        imgFilter: "brightness(0.80) saturate(1.32) contrast(1.12)",
+        shadow: "0 10px 32px rgba(28,26,23,0.30), 0 3px 8px rgba(28,26,23,0.15)",
+        hasGrain: true, captionColor: "#2C1E10", dateColor: "#4A3828",
+        borderRadius: "2px", width: 130,
+      };
+    default:
+      return getPolaroidStyle(0);
+  }
+}
+
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function ImageGraph({
   images,
@@ -154,8 +242,8 @@ export default function ImageGraph({
         const H = hRef.current;
         // Asymmetric Y padding: polaroid extends 85px above pos.y, ~55px below
         const PAD_X  = 80;
-        const PAD_YT = 100; // top — keeps the polaroid top edge inside
-        const PAD_YB = 70;  // bottom
+        const PAD_YT = 100;
+        const PAD_YB = 70;
         nodesRef.current.forEach((n) => {
           n.x = Math.max(PAD_X,  Math.min(W - PAD_X,  n.x ?? W / 2));
           n.y = Math.max(PAD_YT, Math.min(H - PAD_YB, n.y ?? H / 2));
@@ -288,7 +376,8 @@ export default function ImageGraph({
           const pos = positions.get(node.id);
           if (!pos) return null;
 
-          const t          = nodeTilt(node.id);
+          const t           = nodeTilt(node.id);
+          const ps          = getPolaroidStyle(node.id);
           const isExpanding = expandingIds.has(node.id);
           const isExpanded  = expandedIds.has(node.id);
           const isFresh     = freshIds.has(node.id);
@@ -299,28 +388,52 @@ export default function ImageGraph({
               className={isFresh ? "animate-fade-in" : ""}
               style={{
                 position: "absolute",
-                left: pos.x - 65,
+                left: pos.x - ps.width / 2,
                 top: pos.y - 85,
-                width: 130,
+                width: ps.width,
                 transform: `rotate(${t}deg)`,
                 zIndex: 2,
               }}
             >
               <div
                 style={{
-                  background: "#FDFAF4",
-                  padding: "8px 8px 34px 8px",
-                  borderRadius: "2px",
-                  boxShadow: "0 4px 20px rgba(28,26,23,0.15), 0 1px 4px rgba(28,26,23,0.07)",
+                  position: "relative",
+                  background: ps.paper,
+                  padding: ps.padding,
+                  borderRadius: ps.borderRadius,
+                  boxShadow: ps.shadow,
                 }}
               >
+                {/* Film grain overlay */}
+                {ps.hasGrain && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      backgroundImage: GRAIN_URL,
+                      backgroundRepeat: "repeat",
+                      borderRadius: ps.borderRadius,
+                      mixBlendMode: "overlay",
+                      pointerEvents: "none",
+                      zIndex: 4,
+                      opacity: 0.65,
+                    }}
+                  />
+                )}
+
                 {/* Image with expand button */}
                 <div style={{ position: "relative" }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={node.imageUrl}
                     alt=""
-                    style={{ width: "100%", height: 96, objectFit: "cover", display: "block" }}
+                    style={{
+                      width: "100%",
+                      height: ps.imgHeight,
+                      objectFit: "cover",
+                      display: "block",
+                      filter: ps.imgFilter,
+                    }}
                   />
 
                   {!isExpanded && (
@@ -361,7 +474,7 @@ export default function ImageGraph({
                       fontFamily: "var(--font-cormorant)",
                       fontSize: "0.7rem",
                       fontStyle: "italic",
-                      color: "#5C4A38",
+                      color: ps.captionColor,
                       lineHeight: 1.25,
                       margin: 0,
                     }}
@@ -372,7 +485,7 @@ export default function ImageGraph({
                     style={{
                       fontFamily: "var(--font-cormorant)",
                       fontSize: "0.6rem",
-                      color: "#7A6B5A",
+                      color: ps.dateColor,
                       lineHeight: 1.2,
                       margin: 0,
                       marginTop: 1,
