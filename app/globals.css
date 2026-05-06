@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-serif: var(--font-cormorant);
+  --font-display: var(--font-playfair);
+}
+
+:root {
+  --background: #F5F0E8;
+  --foreground: #1C1A17;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out forwards;
+}
+
+.animate-blink {
+  animation: blink 1s step-end infinite;
+}
+
+/* Remove autofill styling */
+input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px #FDFAF4 inset;
+  -webkit-text-fill-color: #1C1A17;
+}
+
+/* Quote input placeholder */
+.quote-input:empty::before {
+  content: attr(data-placeholder);
+  color: #7A6B5A;
+  opacity: 0.45;
+  pointer-events: none;
+}
